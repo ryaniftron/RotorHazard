@@ -72,31 +72,31 @@ receiver_protocols = ["cv1", "rf1"]
 mqtt_publish_topics = {
     "cv1" :
         {
-            "receiver_command_all":receiver_command_all%("cv1"),
-            "receiver_command_node_topic":receiver_command_node_topic%("cv1", "%d"),
-            "receiver_command_targeted_topic":receiver_command_targeted_topic%("cv1", "%d"),
-            "receiver_request_all_topic":receiver_request_all_topic%("cv1"),
-            "receiver_request_node_all_topic":receiver_request_node_all_topic%("cv1", "%d"),
-            "receiver_request_node_active_topic":receiver_request_node_active_topic%("cv1", "%d"),
-            "receiver_request_targeted_topic":receiver_request_targeted_topic%("cv1", "%s"),
-            "receiver_kick_topic":receiver_kick_topic%("cv1", "%d"),
-            "receiver_command_esp_all": receiver_command_esp_all%("cv1"),
-            "receiver_command_esp_node_topic":receiver_command_esp_node_topic%("cv1", "%d"),
-            "receiver_command_esp_targeted_topic": receiver_command_esp_targeted_topic%("cv1", "%s"),
+            "receiver_command_all":receiver_command_all[0]%("cv1"),
+            "receiver_command_node_topic":receiver_command_node_topic[0]%("cv1", "%d"),
+            "receiver_command_targeted_topic":receiver_command_targeted_topic[0]%("cv1", "%d"),
+            "receiver_request_all_topic":receiver_request_all_topic[0]%("cv1"),
+            "receiver_request_node_all_topic":receiver_request_node_all_topic[0]%("cv1", "%d"),
+            "receiver_request_node_active_topic":receiver_request_node_active_topic[0]%("cv1", "%d"),
+            "receiver_request_targeted_topic":receiver_request_targeted_topic[0]%("cv1", "%s"),
+            "receiver_kick_topic":receiver_kick_topic[0]%("cv1", "%d"),
+            "receiver_command_esp_all": receiver_command_esp_all[0]%("cv1"),
+            "receiver_command_esp_node_topic":receiver_command_esp_node_topic[0]%("cv1", "%d"),
+            "receiver_command_esp_targeted_topic": receiver_command_esp_targeted_topic[0]%("cv1", "%s"),
         },
     "rf1":
         {
-            "receiver_command_all":receiver_command_all%("rf1"),
-            "receiver_command_node_topic":receiver_command_node_topic%("rf1", "%d"),
-            "receiver_command_targeted_topic":receiver_command_targeted_topic%("rf1", "%d"),
-            "receiver_request_all_topic":receiver_request_all_topic%("rf1"),
-            "receiver_request_node_all_topic":receiver_request_node_all_topic%("rf1", "%d"),
-            "receiver_request_node_active_topic":receiver_request_node_active_topic%("rf1", "%d"),
-            "receiver_request_targeted_topic":receiver_request_targeted_topic%("rf1", "%s"),
-            "receiver_kick_topic":receiver_kick_topic%("rf1", "%d"),
-            "receiver_command_esp_all": receiver_command_esp_all%("rf1"),
-            "receiver_command_esp_node_topic":receiver_command_esp_node_topic%("rf1", "%d"),
-            "receiver_command_esp_targeted_topic": receiver_command_esp_targeted_topic%("rf1", "%s"),
+            "receiver_command_all":receiver_command_all[0]%("rf1"),
+            "receiver_command_node_topic":receiver_command_node_topic[0]%("rf1", "%d"),
+            "receiver_command_targeted_topic":receiver_command_targeted_topic[0]%("rf1", "%d"),
+            "receiver_request_all_topic":receiver_request_all_topic[0]%("rf1"),
+            "receiver_request_node_all_topic":receiver_request_node_all_topic[0]%("rf1", "%d"),
+            "receiver_request_node_active_topic":receiver_request_node_active_topic[0]%("rf1", "%d"),
+            "receiver_request_targeted_topic":receiver_request_targeted_topic[0]%("rf1", "%s"),
+            "receiver_kick_topic":receiver_kick_topic[0]%("rf1", "%d"),
+            "receiver_command_esp_all": receiver_command_esp_all[0]%("rf1"),
+            "receiver_command_esp_node_topic":receiver_command_esp_node_topic[0]%("rf1", "%d"),
+            "receiver_command_esp_targeted_topic": receiver_command_esp_targeted_topic[0]%("rf1", "%s"),
         }
 }
 
@@ -109,26 +109,30 @@ print('abc%sdef%sghi'%(23,'%s'))
 mqtt_subscribe_topics = {
     "cv1" :
         {
-            "receiver_response_all":receiver_response_all_topic%("cv1"),
-            "receiver_response_node":receiver_response_node_topic%("cv1", "%d"),
+            "receiver_response_all":receiver_response_all_topic[0]%("cv1"),
+            "receiver_response_node":receiver_response_node_topic[0]%("cv1", "%d"),
             "receiver_connection":receiver_connection_topic,
-            "receiver_response_targeted":receiver_response_targeted_topic%("cv1", "%s"),
+            "receiver_response_targeted":receiver_response_targeted_topic[0]%("cv1", "%s"),
             "receiver_static_status":receiver_status_static_topic,
             "receiver_variable_status":receiver_status_variable_topic
         },
     "rf1" : 
         {
-            "receiver_response_all":receiver_response_all_topic%("cv1"),
-            "receiver_response_node":receiver_response_node_topic%("cv1", "%d"),
+            "receiver_response_all":receiver_response_all_topic[0]%("cv1"),
+            "receiver_response_node":receiver_response_node_topic[0]%("cv1", "%d"),
             "receiver_connection":receiver_connection_topic,
-            "receiver_response_targeted":receiver_response_targeted_topic%("cv1", "%s"),
+            "receiver_response_targeted":receiver_response_targeted_topic[0]%("cv1", "%s"),
             "receiver_static_status":receiver_status_static_topic,
             "receiver_variable_status":receiver_status_variable_topic
         }
 }
 
 ESP_COMMANDS = {
-    "Request Static Status": "status_static?",
-    "Request Variable Status": "status_var?",
-    "Set Node Number": "node_number=%d",
+    "Request Static Status": "status_static",
+    "Request Variable Status": "status_var",
+    "Set Node Number": "node_number",
+    "Lock Status": "lock_status",
+    "Lock": "lock",
+    "Reset Lock": "reset_lock",
+    "User Message": "user_message",
 }

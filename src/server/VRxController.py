@@ -782,15 +782,6 @@ class VRxController:
             raise Exception("Error checking mode has failed")
         self._mqttc.publish(topic,cmd)
 
-
-
-
-
-CRED = '\033[91m'
-CEND = '\033[0m'
-def printc(*args):
-    print(CRED + ' '.join(args) + CEND)
-
 class BaseVRxNode:
     """Node controller for both the broadcast and individual nodes"""
     def __init__(self,
@@ -863,9 +854,9 @@ class VRxNode(BaseVRxNode):
             raise Exception("node_number out of range")
 
     def set_node_number(self, new_node_number):
-        topic = mqtt_publish_topics["cv1"]["receiver_command_esp_node_topic"][0]%self._node_number
+        topic = mqtt_publish_topics["cv1"]["receiver_command_esp_node_topic"]%self._node_number
         cmd = ESP_COMMANDS["Set Node Number"] % new_node_number
-        self._mqttc.publish(topic,cmd)
+        self._mqttc.publish(topic, cmd)
         return
 
     @property
@@ -893,12 +884,19 @@ class VRxNode(BaseVRxNode):
         """Sets all receivers at this node number to the new frequency"""
         self._node_frequency = frequency
         if frequency != RHUtils.FREQUENCY_ID_NONE:
-            topic = mqtt_publish_topics["cv1"]["receiver_command_node_topic"][0]%self._node_number
-            messages = self._cv.set_custom_frequency(self._cv.bc_id, frequency)
+            for rx, rx_topics in mqtt_publish_topics.items():
+                if rx == 'cv1':
+                    topic = rx_topics["receiver_command_node_topic"]%self._node_number
+                    messages = self._cv.set_custom_frequency(self._cv.bc_id, frequency)
 
-            # set_custom_frequency returns multiple commands (one for channel and one for band)
-            for m in messages:
-                self._mqttc.publish(topic,m)
+                    # set_custom_frequency returns multiple commands (one for channel and one for band)
+                    for m in messages:
+                        self._mqttc.publish(topic,m)
+                elif rx == 'rf1':
+                    topic = mqtt_publish_topics[rx]["receiver_command_node_topic"]%self._node_number
+                    message = json.dumps({'frequency':frequency})
+                else:
+                    raise NotImplementedError
 
     @property
     def node_camera_type(self, ):
@@ -923,27 +921,32 @@ class VRxNode(BaseVRxNode):
         print("TODO node_lock_status property")
 
     def get_node_lock_status(self,):
-        topic = mqtt_publish_topics["cv1"]["receiver_request_node_all_topic"][0]%self._node_number
-        report_req = self._cv.get_lock_format(self._node_number+1)
-        self._mqttc.publish(topic,report_req)
-        return report_req
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_node_topic"]%self._node_number
+            req = json.dumps({ESP_COMMANDS["Lock Status"]:'?'})
+            self._mqttc.publish(topic,req)
 
     def request_static_status(self):
-        topic = mqtt_publish_topics["cv1"]["receiver_command_esp_node_topic"][0]%self._node_number
-        msg = ESP_COMMANDS["Request Static Status"]
-        self._mqttc.publish(topic,msg)
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_node_topic"]%self._node_number
+            msg = json.dumps({ ESP_COMMANDS["Request Static Status"] : '?'})
+            self._mqttc.publish(topic,msg)
 
     def request_variable_status(self):
-        topic = mqtt_publish_topics["cv1"]["receiver_command_esp_node_topic"][0]%self._node_number
-        msg = ESP_COMMANDS["Request Variable Status"]
-        self._mqttc.publish(topic,msg)
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_node_topic"]%self._node_number
+            msg = json.dumps({ ESP_COMMANDS["Request Variable Status"] : '?'})
+            print(msg)
+            self._mqttc.publish(topic,msg)
 
     def set_message_direct(self, message):
         """Send a raw message to the OSD"""
-        topic = mqtt_publish_topics["cv1"]["receiver_command_node_topic"][0]%self._node_number
-        cmd = self._cv.set_user_message(self._node_number+1, message)
-        self._mqttc.publish(topic, cmd)
-        return cmd
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_node_topic"]%self._node_number
+            cmd = json.dumps({ ESP_COMMANDS["User Message"] : message})
+            #TODO length check the message for each rx type
+            self._mqttc.publish(topic, cmd)
+            
 
     def _update_osd_by_fields(self):
         #todo
@@ -961,45 +964,47 @@ class VRxBroadcastNode(BaseVRxNode):
                  ):
         BaseVRxNode.__init__(self, mqtt_client, cv)
         self._cv_broadcast_id = clearview.comspecs.clearview_specs['bc_id']
-        self._broadcast_cmd_topic = mqtt_publish_topics["cv1"]["receiver_command_all"][0]
-        self._rx_cmd_esp_all_topic = mqtt_publish_topics["cv1"]["receiver_command_esp_all"][0]
+        self._broadcast_cmd_topic = mqtt_publish_topics["cv1"]["receiver_command_all"]
+        self._broadcast_esp_all_topic = mqtt_publish_topics["cv1"]["receiver_command_esp_all"]
 
     def set_message_direct(self, message):
         """Send a raw message to all OSD's"""
-        topic = self._broadcast_cmd_topic
-        cmd = self._cv.set_user_message(self._cv_broadcast_id, message)
-        self._mqttc.publish(topic, cmd)
-        return cmd
+        for rx, rx_topics in mqtt_publish_topics.items(): 
+            topic = rx_topics["receiver_command_esp_all"]
+            cmd = json.dumps({ ESP_COMMANDS["User Message"] : message})
+            self._mqttc.publish(topic, cmd)
 
     def turn_off_osd(self):
         """Turns off all OSD elements except user message"""
-        topic = self._broadcast_cmd_topic
-        cmd = self._cv.hide_osd(self._cv_broadcast_id)
-        self._mqttc.publish(topic, cmd)
-        return cmd
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_all"]
+            cmd = json.dumps({ ESP_COMMANDS["Hide OSD"] : ""})
+            self._mqttc.publish(topic, cmd)
 
     def reset_lock(self):
         """ Resets lock of all receivers"""
-        topic = self._broadcast_cmd_topic
-        cmd = self._cv.reset_lock(self._cv_broadcast_id)
-        self._mqttc.publish(topic, cmd)
-        return cmd
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_all"]
+            cmd = json.dumps({ ESP_COMMANDS["Reset Lock"] : ""})
+            self._mqttc.publish(topic, cmd)
 
     def request_static_status(self):
-        topic = self._rx_cmd_esp_all_topic
-        cmd = ESP_COMMANDS["Request Static Status"]
-        self._mqttc.publish(topic,cmd)
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_all"]
+            cmd = json.dumps({ ESP_COMMANDS["Request Static Status"] : '?'})
+            self._mqttc.publish(topic,cmd)
 
     def request_variable_status(self):
-        topic = self._rx_cmd_esp_all_topic
-        cmd = ESP_COMMANDS["Request Variable Status"]
-        self._mqttc.publish(topic,cmd)
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_all"]
+            cmd = json.dumps({ ESP_COMMANDS["Request Variable Status"] : '?'})
+            self._mqttc.publish(topic,cmd)
 
-    def get_node_lock_status(self,):
-        topic = mqtt_publish_topics["cv1"]["receiver_request_all_topic"][0]
-        report_req = self._cv.get_lock_format(self._cv_broadcast_id)
-        self._mqttc.publish(topic,report_req)
-        return report_req
+    def get_node_lock_status(self):
+        for rx, rx_topics in mqtt_publish_topics.items():
+            topic = rx_topics["receiver_command_esp_all"]
+            report_req = cmd = json.dumps({ ESP_COMMANDS["Lock"] : "?"})
+            self._mqttc.publish(topic,report_req)
 
 class ClearViewValInterpret:
     """Holds constants of the protocols"""
