@@ -73,4 +73,4 @@ python -m pip install -e .
 
 Be sure your ClearView2.0 Receiver is [updated to the latest version](http://proteanpaper.com/fwupdate.cgi?comp=iftrontech&manu=2).
 
-A ClearView Comms Module allows the ClearView2.0 to recieve commands from a network. The CVCM will be made commercially available. Users may build a CVCM with an ESP32 development board and a CV2 update board. Visit the [ClearView Interface](https://github.com/ryaniftron/clearview_interface_public) code repo for more information and build instructions.
+A ClearView Comms Module allows the ClearView2.0 to recieve commands from a network. The CVCM will be made commercially available. Users may build a CVCM with an ESP32 development board and a CV2 update board. Visit the [ClearView Interface](https://github.com/ryaniftron/clearview_interface_public) code repo for more information and build instructions. The usage guide of the CVCM is located [here](https://github.com/ryaniftron/clearview_interface_public/blob/master/docs/CVCM_User_Manual.md).
